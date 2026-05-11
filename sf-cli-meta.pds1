@@ -1,7 +1,8 @@
-#--Meta-command dictionary
+#--Meta-commands dictionary
 @{
 "current-session" = "--#Current session
     SELECT CURRENT_ROLE(),CURRENT_SECONDARY_ROLES(),CURRENT_WAREHOUSE(),CURRENT_DATABASE(),CURRENT_SCHEMA();"
+
 "dbsz" = "--#Database size
     SELECT * FROM TABLE(SNOWFLAKE.INFORMATION_SCHEMA.DATABASE_STORAGE_USAGE_HISTORY(DATEADD('days', -10, CURRENT_DATE()), 
     CURRENT_DATE()))"
@@ -10,72 +11,85 @@
     from snowflake.account_usage.query_history
     where start_time >= date_trunc(month, current_date)
     group by 1 order by 2 desc"
+
 "storage-usage" = "--#Storage usage
     select date_trunc(month, usage_date) as usage_month,avg(storage_bytes + stage_bytes + failsafe_bytes) / power(1024, 4) as 
     billable_tb
     from snowflake.account_usage.storage_usage
     group by 1 order by 1;"
+
 "failed-logins" = "--#Failed logins
     select user_name,sum(iff(is_success = 'NO', 1, 0)) as failed_logins,
     count(*) as logins,sum(iff(is_success = 'NO', 1, 0)) / nullif(count(*), 0) as login_failure_rate
     from snowflake.account_usage.login_history
     where event_timestamp >= date_trunc(month, current_date)
     group by 1 order by 4 desc;"
+
 "query-execution-time-by-user" = "--#Query execution time by user
     select user_name,avg(execution_time) as average_execution_time
     from snowflake.account_usage.query_history
     where start_time >= date_trunc(month, current_date)
     group by 1 order by 2 desc;"
+
 "execution-time-by-query-type-and-warehouse-size" = "--#Average query execution time by query type and warehouse size
     select query_type,warehouse_size,avg(execution_time) as average_execution_time
     from snowflake.account_usage.query_history
     where start_time >= date_trunc(month, current_date)
     group by 1,2 order by 3 desc;"
+
 "wh-credit-usage" = "--#Warehouse credit usage
     select warehouse_name,
     sum(credits_used) as total_credits_used
     from snowflake.account_usage.warehouse_metering_history
     where start_time >= date_trunc(month, current_date)
     group by 1 order by 2 desc;"
+
 "wh-total-queries-executed" = "--#Total queries executed
     select warehouse_name,
     count(*) as total_queries
     from snowflake.account_usage.query_history
     where start_time >= date_trunc(month, current_date)
     group by 1 order by 2 desc;"
+
 "wh-credit-usage2" = "--#Warehouse credit usage by date
     select start_time::date as usage_date, warehouse_name,
     sum(credits_used) as total_credits_used
     from snowflake.account_usage.warehouse_metering_history
     where start_time >= date_trunc(month, current_date)
     group by 1,2 order by 2,1;"
+
 "wh-cost1" = "--#Warehouse cost breakdown
     SELECT start_time::date AS usage_date,SUM(credits_used) AS credits_used,
     SUM(credits_used) * 4.00 AS estimated_cost_usd -- adjust rate as needed
     FROM snowflake.account_usage.warehouse_metering_history
     WHERE start_time >= DATEADD('days', -30, CURRENT_DATE())
     GROUP BY 1 ORDER BY 1 DESC;"
+
 "billing-view" = "--#Billing view
     SELECT usage_date,service_level,usage_type,SUM(usage_in_currency) AS cost
     FROM snowflake.organization_usage.usage_in_currency_daily
     WHERE usage_date >= DATEADD('days', -30, CURRENT_DATE())
     GROUP BY 1, 2, 3 ORDER BY 1 DESC, 4 DESC;"
+
 "wh-idle-time" = "--#Warehouse idle time
     SELECT warehouse_name, (SUM(credits_used_compute) - SUM(credits_attributed_compute_queries)) AS idle_cost
     FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
     WHERE start_time >= DATEADD('days', -10, CURRENT_DATE())
     AND end_time < CURRENT_DATE()
     GROUP BY warehouse_name;"
+
 "data-storage-usage" = "--#Data storage usage
     select date_trunc(month, usage_date) as usage_month,
     avg(storage_bytes + stage_bytes + failsafe_bytes) / power(1024, 4) as billable_tb
     from snowflake.account_usage.storage_usage
     group by 1 order by 1;"
+
 "billing-usage" = "--#Billing usage
     SELECT * FROM snowflake.billing.partner_usage_in_currency_daily
     WHERE MONTH(usage_date) = 01
     AND YEAR(usage_date) = 2026
     ORDER BY sold_to_contract_number, usage_date ASC;"
+
 "iceberg-access-errors" = "--#Iceberg access errors
     SELECT * FROM snowflake.monitoring.iceberg_access_errors"
 }
