@@ -3,19 +3,19 @@
 #--Authentication=Snowflake
 "SF-DEV" = "
     Driver=SnowflakeDSIIDriver;
-    Server=uqujucn-qgc97631.snowflakecomputing.com;
+    Server=ORGID-ACCID.snowflakecomputing.com;
     Authenticator=snowflake;
-    Uid=sfuser;
-    Pwd=***;
+    Uid=user1;
+    Pwd=********;
     MinPoolSize=1;
     MaxPoolSize=2;
     "
 #--Authentication=externalbrowser (SSO)*/
 "SF-STAGE" = "
     Driver=SnowflakeDSIIDriver;
-    Server=uqujucn-qgc97631.snowflakecomputing.com;
+    Server=ORGID-ACCID.snowflakecomputing.com;
     Authenticator=externalbrowser;
-    Uid=sfuser;
+    Uid=domain-user1;
     MinPoolSize=1;
     MaxPoolSize=2;    
     "
